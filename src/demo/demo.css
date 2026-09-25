@@ -1,0 +1,60 @@
+:root {
+  color-scheme: dark;
+  font-family: system-ui, sans-serif;
+}
+
+body {
+  margin: 0;
+  min-height: 100dvh;
+  background: #1a120d;
+  color: #f3e9df;
+}
+
+.collection {
+  max-width: 96rem;
+  margin: 0 auto;
+  padding: 2.5rem 1.25rem 4rem;
+}
+
+.collection h1 {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+.collection-lead {
+  margin: 0.4rem 0 0;
+  color: #b9a998;
+  font-size: 0.95rem;
+}
+
+.ladder {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(9.5rem, 1fr));
+  gap: 2rem 1rem;
+  margin-top: 2.5rem;
+}
+
+/* When all nine fit, they stand in one row on a shared baseline. */
+@media (min-width: 1400px) {
+  .ladder {
+    grid-template-columns: repeat(9, 1fr);
+  }
+}
+
+.ladder-step {
+  margin: 0;
+}
+
+.ladder-step figcaption {
+  display: grid;
+  gap: 0.2rem;
+  margin-top: 1rem;
+  color: #b9a998;
+  font-size: 0.8rem;
+  line-height: 1.35;
+}
+
+.ladder-step figcaption b {
+  color: #f3e9df;
+  font-size: 0.9rem;
+}

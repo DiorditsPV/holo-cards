@@ -1,0 +1,109 @@
+/* Full-screen viewer: dimmed page, the card centred as large as the screen allows. */
+
+.hc-viewer-open {
+  overflow: hidden;
+}
+
+.hc-viewer {
+  --hc-viewer-backdrop: #07050ae6;
+
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  padding: 1.5rem;
+  background: var(--hc-viewer-backdrop);
+  outline: none;
+  animation: hc-viewer-in 0.25s both;
+}
+
+.hc-viewer.is-closing {
+  animation: hc-viewer-out 0.45s both;
+}
+
+/*
+ * The card takes about two thirds of the screen height (at most 82% of the
+ * width), leaving room for the tilt, the hover lift and the glow.
+ */
+.hc-viewer {
+  --hc-viewer-height: 68dvh;
+}
+
+.hc-viewer__stage {
+  width: min(82vw, calc(var(--hc-viewer-height) * 5 / 7));
+}
+
+.hc-viewer__card.is-flying-in {
+  animation: hc-fly 0.7s cubic-bezier(0.25, 1, 0.35, 1) both;
+}
+
+.hc-viewer__card.is-flying-out {
+  animation: hc-fly 0.45s cubic-bezier(0.55, 0, 0.75, 0.2) reverse both;
+}
+
+.hc-viewer__card.is-popping-in {
+  animation: hc-pop 0.5s cubic-bezier(0.2, 1, 0.35, 1) both;
+}
+
+.hc-viewer__card.is-popping-out {
+  animation: hc-pop 0.3s ease-in reverse both;
+}
+
+.hc-viewer__hint {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 1rem;
+  margin: 0;
+  color: #ffffff8c;
+  font: 0.8rem/1.4 system-ui, sans-serif;
+  text-align: center;
+}
+
+.hc-viewer.is-closing .hc-viewer__hint {
+  opacity: 0;
+}
+
+@keyframes hc-viewer-in {
+  from {
+    background-color: transparent;
+  }
+}
+
+@keyframes hc-viewer-out {
+  to {
+    background-color: transparent;
+  }
+}
+
+/* Flight from the grid cell to the centre with one turn, like flipping a card in hand. */
+@keyframes hc-fly {
+  from {
+    transform:
+      translate(var(--hc-fly-x, 0px), var(--hc-fly-y, 0px))
+      scale(var(--hc-fly-scale, 0.5))
+      rotateY(-360deg);
+  }
+  to {
+    transform: none;
+  }
+}
+
+@keyframes hc-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.6) rotateY(-120deg);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hc-viewer,
+  .hc-viewer__card {
+    animation: none !important;
+  }
+}

@@ -1,0 +1,11 @@
+@import "./card.css";
+@import "./ranks/common.css";
+@import "./ranks/uncommon.css";
+@import "./ranks/rare.css";
+@import "./ranks/epic.css";
+@import "./ranks/nebula.css";
+@import "./ranks/legendary.css";
+@import "./ranks/mythic.css";
+@import "./ranks/obsidian.css";
+@import "./ranks/prismatic.css";
+@import "./viewer.css";

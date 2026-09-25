@@ -1,0 +1,115 @@
+/*
+ * Nebula — a porthole into deep ocean-blue space. The body is cold midnight
+ * teal with far stars; the window is a porthole into a bright cyan nebula, so
+ * the art sits in its own scene. Nearer stars drift over everything with their
+ * own parallax, light gathers where the pointer is and an aurora band slides
+ * across. From here the foil covers the whole card.
+ *
+ * The palette is teal and cyan on purpose: epic, one tier below, is the violet
+ * space card, and the two must never read as the same card at a glance.
+ *
+ * The nebula texture is painted violet, blue and pink. In the porthole it is
+ * recoloured by an opaque cyan-to-azure layer blended with `hue`: the texture
+ * keeps its own light and saturation and takes the layer's hues. This is
+ * background blending inside one element, so no filter or extra compositing
+ * layer is involved.
+ *
+ * Two rules keep the sky steady:
+ *   - nothing is masked around the pointer: a moving mask makes stars pop in and
+ *     out at its edge, which reads as flicker;
+ *   - star textures are moved with `translate`, not `background-position`: the
+ *     texture stays fixed inside its own box and moves as a whole, so single
+ *     stars do not jitter from one pixel to the next.
+ *
+ * Nothing here uses `will-change`: WebKit shows a promoted layer blank while its
+ * tiles repaint, which reads as the card flickering.
+ */
+.hc-card[data-rank="nebula"] {
+  --hc-frame: linear-gradient(155deg, #86f2ee, #11606e 30%, #06222c 62%, #3cc6d2);
+  --hc-panel:
+    var(--hc-tex-stars-far) center / cover,
+    radial-gradient(ellipse at 16% 90%, #12a0a04d, #0000 55%),
+    radial-gradient(ellipse at 88% 18%, #1f6fb840, #0000 50%),
+    linear-gradient(170deg, #031b24, #03131a 55%, #020b10);
+  --hc-panel-shadow: inset 0 0 0 1px #9ff6ff4d, inset 0 0 26px #00080b99;
+  --hc-window:
+    radial-gradient(ellipse at 50% 115%, #6dfce040, #6dfce000 55%),
+    radial-gradient(ellipse at 50% 45%, #0000 48%, #010a0eb3 100%),
+    linear-gradient(160deg, #00e1ff, #00c8b4 45%, #3a86ff),
+    var(--hc-tex-nebula) 35% 40% / 170% 170%,
+    #010d12;
+  --hc-window-line: #9ff6ff66;
+  --hc-ink: #f0feff;
+  --hc-copy: #c2eef2;
+  --hc-muted: #74c6cf;
+  --hc-line: #b8f6ff2e;
+  --hc-edge: #b4f6ff;
+  --hc-glow: #22d8e8;
+  --hc-gem: #19bcc4;
+  --hc-gem-light: #d6fffc;
+  --hc-gem-dark: #054a55;
+  --hc-gem-glow: #22d8e880;
+  --hc-grain: 0.08;
+}
+
+/*
+ * Porthole: the texture is recoloured by the hue layer (third), the glow and
+ * the vignette above it are drawn normally. One blend value per layer, in order.
+ * Rim: a lit edge, a deep inner shadow, a dark groove and a faint cyan halo.
+ */
+.hc-card[data-rank="nebula"] .hc-card__window {
+  background-blend-mode: normal, normal, hue, normal, normal;
+  box-shadow:
+    inset 0 0 0 1px var(--hc-window-line),
+    inset 0 1px 0 #ffffff33,
+    inset 0 0 5cqw #000608cc,
+    0 0 0 1px #00080b80,
+    0 0 4cqw -1cqw #22d8e880;
+}
+
+.hc-card[data-rank="nebula"] .hc-card__foil,
+.hc-card[data-rank="nebula"] .hc-card__glare {
+  -webkit-mask: none;
+  mask: none;
+}
+
+/* Light where the pointer is, and the aurora band. Gradients only: cheap to repaint. */
+.hc-card[data-rank="nebula"] .hc-card__foil {
+  background:
+    radial-gradient(
+      circle at var(--hc-pointer),
+      color-mix(in srgb, #8cf4ff calc(var(--hc-active) * 35%), transparent) 0,
+      color-mix(in srgb, #2fb4d8 calc(var(--hc-active) * 15%), transparent) 30%,
+      #0000 65%
+    ),
+    linear-gradient(
+      115deg,
+      #0000 34%,
+      color-mix(in srgb, #6dffb4 calc(8% + var(--hc-active) * 20%), transparent) 44%,
+      color-mix(in srgb, #4fe6ff calc(8% + var(--hc-active) * 20%), transparent) 51%,
+      color-mix(in srgb, #4a8cff calc(8% + var(--hc-active) * 20%), transparent) 58%,
+      #0000 68%
+    ) calc(100% - var(--hc-px) * 100%) calc(100% - var(--hc-py) * 100%) / 250% 250%;
+  opacity: 1;
+  mix-blend-mode: screen;
+}
+
+/* Nearer stars, two layers with different parallax. Always visible, brighter under the hand. */
+.hc-card[data-rank="nebula"] .hc-card__foil::before,
+.hc-card[data-rank="nebula"] .hc-card__foil::after {
+  mix-blend-mode: screen;
+}
+
+.hc-card[data-rank="nebula"] .hc-card__foil::before {
+  inset: -10%;
+  background: var(--hc-tex-stars-near) center / cover;
+  translate: calc((0.5 - var(--hc-px)) * 10%) calc((0.5 - var(--hc-py)) * 10%);
+  opacity: calc(0.6 + var(--hc-active) * 0.4);
+}
+
+.hc-card[data-rank="nebula"] .hc-card__foil::after {
+  inset: -5%;
+  background: var(--hc-tex-stars-mid) center / cover;
+  translate: calc((0.5 - var(--hc-px)) * 4%) calc((0.5 - var(--hc-py)) * 4%);
+  opacity: calc(0.5 + var(--hc-active) * 0.4);
+}

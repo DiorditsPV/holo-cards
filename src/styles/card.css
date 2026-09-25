@@ -1,0 +1,542 @@
+/*
+ * Holo card — base structure.
+ *
+ * Layers inside .hc-card__tilt share one grid cell and are stacked bottom-up by
+ * z-index. The tilt element is rotated as one flat plane (transform-style: flat):
+ * inside a preserve-3d context browsers composite each layer on its own and
+ * mix-blend-mode then works only intermittently — layers blink or vanish.
+ * Depth between layers is drawn with parallax instead.
+ *
+ *   .hc-card__face       z auto  frame, panel, art window
+ *   .hc-card__grain      z 2     paper or stone grain
+ *   .hc-card__foil       z 3     rank effect (+ ::before / ::after)
+ *   .hc-card__glare      z 4     light that follows the pointer
+ *   .hc-card__subject    z 5     floating art, above the foil
+ *   .hc-card__lettering  z 6     captions, title, description, rank line
+ *   .hc-card__jewel      z 7     rank gem set into the frame
+ *
+ * The lettering lies above the foil so the rank effect never tints the text,
+ * and above the floating art so a tall image never covers the title.
+ *
+ * The tracker (core/tilt.ts) writes --hc-px, --hc-py, --hc-tilt-x, --hc-tilt-y,
+ * --hc-active and --hc-dist. Everything else is derived here.
+ */
+
+.hc-card {
+  /* Textures. Override to swap a texture without touching the layers. */
+  --hc-tex-grain: url("../textures/grain.webp");
+  --hc-tex-brushed: url("../textures/brushed.webp");
+  --hc-tex-nebula: url("../textures/nebula.webp");
+  --hc-tex-stars-far: url("../textures/stars-far.webp");
+  --hc-tex-stars-mid: url("../textures/stars-mid.webp");
+  --hc-tex-stars-near: url("../textures/stars-near.webp");
+  --hc-tex-flecks: url("../textures/flecks.webp");
+  --hc-tex-geometry: url("../textures/geometry.webp");
+  --hc-tex-cosmos-far: url("../textures/cosmos-far.webp");
+  --hc-tex-cosmos-mid: url("../textures/cosmos-mid.webp");
+  --hc-tex-cosmos-near: url("../textures/cosmos-near.webp");
+
+  /* Typography. */
+  --hc-font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  --hc-font-display: var(--hc-font);
+
+  /* Geometry of the art window, shared by the window, the foil mask and the gem. */
+  --hc-radius: 5.2cqw;
+  --hc-win-x: 7%;
+  --hc-win-y: 11.5%;
+  --hc-win-w: 86%;
+  --hc-win-h: 44%;
+
+  /* Rank palette. Each rank file overrides these. */
+  --hc-frame: linear-gradient(155deg, #e8e8e8, #9a9a9a);
+  --hc-frame-blend: normal;
+  --hc-panel: #f4f4f4;
+  --hc-panel-shadow: inset 0 0 0 1px #0000001a;
+  --hc-window: #dddddd;
+  --hc-window-line: #0000001a;
+  --hc-ink: #1d1d1f;
+  --hc-copy: #4a4a4f;
+  --hc-muted: #7a7a80;
+  --hc-line: #0000001f;
+  --hc-edge: #ffffff;
+  --hc-glow: #9aa4b5;
+  --hc-pip: var(--hc-glow);
+  --hc-gem: #a8a8b0;
+  --hc-gem-light: #f2f2f5;
+  --hc-gem-dark: #6d6d75;
+  --hc-gem-glow: #0000;
+  --hc-grain: 0.12;
+  --hc-glare: 0.45;
+  --hc-rest-shadow:
+    0 14px 26px -12px #000000b8,
+    0 3px 10px -4px #0000008c;
+
+  /*
+   * Raised lettering: the lit top edge, the side that gives the letters
+   * thickness, and the shadow they cast onto the card. Where the browser
+   * supports it, the side and the shadow are derived from the ink's lightness
+   * (see the @supports rule below). A rank may override any of the three.
+   */
+  --hc-type-light: color-mix(in srgb, var(--hc-edge) 70%, transparent);
+  --hc-type-side: #0000;
+  --hc-type-cast: #0000003d;
+
+  /* Tracker output, resting values. */
+  --hc-px: 0.5;
+  --hc-py: 0.5;
+  --hc-tilt-x: 0deg;
+  --hc-tilt-y: 0deg;
+  --hc-active: 0;
+  --hc-dist: 0;
+
+  /* Pointer as a position for gradients. */
+  --hc-pointer: calc(var(--hc-px) * 100%) calc(var(--hc-py) * 100%);
+
+  width: 100%;
+  aspect-ratio: 5 / 7;
+  perspective: 900px;
+  container-type: inline-size;
+  font-family: var(--hc-font);
+  -webkit-tap-highlight-color: transparent;
+}
+
+/*
+ * The side and the cast shadow follow the ink's lightness. Light ink sits on a
+ * dark panel: it gets a visible side and a dense shadow. Dark ink sits on a
+ * light panel, where a dark side would only make the letters look bolder and
+ * blurred, so the side fades out and the shadow stays soft. Browsers without
+ * relative colours keep the lit edge and a medium shadow.
+ */
+@supports (color: oklch(from red l c h / calc(alpha * l))) {
+  .hc-card {
+    --hc-type-side: oklch(from var(--hc-ink) calc(l * 0.46) calc(c * 0.7) h / calc(l * l * l));
+    --hc-type-cast: oklch(from var(--hc-ink) 0 0 0 / calc(0.14 + l * l * 0.5));
+  }
+}
+
+.hc-card__tilt {
+  display: grid;
+  width: 100%;
+  height: 100%;
+  border-radius: var(--hc-radius);
+  transform-style: flat;
+  isolation: isolate;
+  transform:
+    rotateX(var(--hc-tilt-x))
+    rotateY(var(--hc-tilt-y))
+    scale(calc(1 + var(--hc-active) * 0.025));
+  box-shadow: var(--hc-rest-shadow);
+  transition: box-shadow 0.35s;
+  outline: none;
+}
+
+.hc-card__tilt[role="button"] {
+  cursor: pointer;
+}
+
+.hc-card__tilt:focus-visible {
+  outline: 2px solid var(--hc-edge);
+  outline-offset: 4px;
+}
+
+.hc-card.is-active .hc-card__tilt {
+  box-shadow:
+    0 0 0 1px var(--hc-edge),
+    0 0 16px 1px color-mix(in srgb, var(--hc-glow) 70%, transparent),
+    0 0 52px -12px var(--hc-glow),
+    0 18px 30px -12px #000000cc;
+}
+
+.hc-card__tilt > * {
+  grid-area: 1 / 1;
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: var(--hc-radius);
+  overflow: hidden;
+}
+
+/* Frame and panel. */
+
+/*
+ * Nothing on the card uses will-change. In WebKit (Safari) a promoted layer is
+ * shown blank while its tiles repaint, and the effect layers above the face
+ * repaint on every pointer frame, so promoted layers made the cards flicker.
+ */
+.hc-card__face {
+  background: var(--hc-frame);
+  background-blend-mode: var(--hc-frame-blend);
+}
+
+.hc-card__face::before {
+  content: "";
+  position: absolute;
+  inset: 2.6cqw;
+  border-radius: calc(var(--hc-radius) - 2.2cqw);
+  background: var(--hc-panel);
+  box-shadow: var(--hc-panel-shadow);
+}
+
+.hc-card__top,
+.hc-card__window,
+.hc-card__body,
+.hc-card__footer {
+  position: absolute;
+  z-index: 1;
+}
+
+/*
+ * Lettering: captions, title, description and the rank line, drawn as raised
+ * type that floats a little above the card.
+ *
+ *   - Each text element stacks a lit top edge, a side and a shadow cast onto
+ *     the card. The lengths inside --hc-emboss are in em: a var() is resolved
+ *     where it is used, so every element gets a stack scaled to its own size.
+ *   - The layer drifts with the pointer at half the travel of the floating art,
+ *     and the cast shadow lags the other way, so the gap between the type and
+ *     the card reads as height. Handling the card lifts the shadow a little more.
+ */
+.hc-card__lettering {
+  --hc-float-x: calc((var(--hc-px) - 0.5) * 2cqw);
+  --hc-float-y: calc((var(--hc-py) - 0.5) * 1.5cqw);
+  --hc-lag-x: calc((0.5 - var(--hc-px)) * 0.08em);
+  --hc-lag-y: calc((0.5 - var(--hc-py)) * 0.08em);
+  --hc-lift: calc(var(--hc-active) * 0.05em);
+
+  /* Display type: the title. */
+  --hc-emboss:
+    0 -0.02em 0 var(--hc-type-light),
+    0 0.022em 0 var(--hc-type-side),
+    0 0.044em 0 var(--hc-type-side),
+    var(--hc-lag-x) calc(0.1em + var(--hc-lift) + var(--hc-lag-y)) 0.16em var(--hc-type-cast);
+
+  /* Small type: a single side and a tight shadow keep the letters sharp. */
+  --hc-emboss-fine:
+    0 0.05em 0 var(--hc-type-side),
+    calc(var(--hc-lag-x) / 2) calc(0.07em + var(--hc-lag-y) / 2) 0.09em var(--hc-type-cast);
+
+  z-index: 6;
+  translate: var(--hc-float-x) var(--hc-float-y);
+}
+
+.hc-card__top {
+  top: 5.2%;
+  left: 9%;
+  right: 9%;
+  display: flex;
+  justify-content: space-between;
+  gap: 3cqw;
+  color: var(--hc-muted);
+  font-size: clamp(6px, 2.5cqw, 16px);
+  font-weight: 650;
+  letter-spacing: 0.14em;
+  line-height: 1;
+  text-transform: uppercase;
+  white-space: nowrap;
+  text-shadow: var(--hc-emboss-fine);
+}
+
+.hc-card__number {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.06em;
+}
+
+.hc-card__window {
+  left: var(--hc-win-x);
+  top: var(--hc-win-y);
+  width: var(--hc-win-w);
+  height: var(--hc-win-h);
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border-radius: 3.6cqw;
+  background: var(--hc-window);
+  box-shadow:
+    inset 0 0 0 1px var(--hc-window-line),
+    inset 0 3px 12px #00000026;
+}
+
+/*
+ * The box reaches --hc-bleed past the text column on every side and pads it
+ * back, so overflow: hidden cuts long copy but not the lettering's shadows.
+ */
+.hc-card__body {
+  --hc-bleed: 1.5cqw;
+
+  top: calc(var(--hc-win-y) + var(--hc-win-h) + 7.5% - var(--hc-bleed));
+  bottom: calc(12.5% - var(--hc-bleed));
+  left: calc(9% - var(--hc-bleed));
+  right: calc(9% - var(--hc-bleed));
+  padding: var(--hc-bleed);
+  overflow: hidden;
+  text-align: center;
+}
+
+.hc-card__title {
+  margin: 0;
+  color: var(--hc-ink);
+  font-family: var(--hc-font-display);
+  font-size: clamp(14px, 9cqw, 60px);
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  line-height: 1;
+  text-wrap: balance;
+  text-shadow: var(--hc-emboss);
+}
+
+.hc-card__text {
+  margin: 2cqw 0 0;
+  color: var(--hc-copy);
+  font-size: clamp(8px, 3.6cqw, 23px);
+  font-weight: 500;
+  line-height: 1.35;
+  text-wrap: pretty;
+  text-shadow: var(--hc-emboss-fine);
+  /* On narrow cards the 8px floor makes the text taller than its share of the
+     card; a longer description ends with an ellipsis instead of a cut line. */
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  overflow: hidden;
+}
+
+.hc-card__footer {
+  bottom: 5.4%;
+  left: 9%;
+  right: 9%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 3cqw;
+  padding-top: 2.4cqw;
+  border-top: 1px solid var(--hc-line);
+}
+
+.hc-card__rank {
+  color: var(--hc-ink);
+  font-size: clamp(6px, 2.6cqw, 17px);
+  font-weight: 750;
+  letter-spacing: 0.18em;
+  line-height: 1;
+  text-transform: uppercase;
+  text-shadow: var(--hc-emboss-fine);
+}
+
+.hc-card__pips {
+  display: flex;
+  gap: 1.1cqw;
+}
+
+.hc-card__pips > i {
+  width: 1.8cqw;
+  height: 1.8cqw;
+  min-width: 4px;
+  min-height: 4px;
+  border: 1px solid var(--hc-muted);
+  opacity: 0.45;
+  transform: rotate(45deg);
+}
+
+/*
+ * Lit pips are raised like the lettering. The pip is turned 45°, so an offset
+ * along both of its axes points straight down on the card.
+ */
+.hc-card__pips > i.is-on {
+  border-color: var(--hc-edge);
+  background: var(--hc-pip);
+  box-shadow:
+    0 0 5px var(--hc-glow),
+    0.14cqw 0.14cqw 0 var(--hc-type-side),
+    0.3cqw 0.3cqw 0.4cqw var(--hc-type-cast);
+  opacity: 1;
+}
+
+/* Art. */
+
+.hc-card__art--emoji {
+  font-size: 25cqw;
+  line-height: 1;
+  filter: drop-shadow(0 2.4cqw 2cqw #0000004d);
+  user-select: none;
+}
+
+.hc-card__window .hc-card__art--image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Floating art for epic and up: leaves the window and follows the pointer. */
+.hc-card__subject {
+  z-index: 5;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+}
+
+.hc-card__subject > .hc-card__art {
+  position: absolute;
+  left: 50%;
+  top: calc(var(--hc-win-y) + var(--hc-win-h) * 0.47);
+  translate:
+    calc(-50% + (var(--hc-px) - 0.5) * 4cqw)
+    calc(-50% + (var(--hc-py) - 0.5) * 3cqw);
+}
+
+.hc-card__subject > .hc-card__art--emoji {
+  font-size: 34cqw;
+  filter:
+    drop-shadow(0 3cqw 2.4cqw #00000080)
+    drop-shadow(0 0 4cqw color-mix(in srgb, var(--hc-glow) 45%, transparent));
+}
+
+.hc-card__subject > .hc-card__art--image {
+  width: 96%;
+  max-height: calc(var(--hc-win-h) + 12%);
+  object-fit: contain;
+  filter: drop-shadow(0 3cqw 2.4cqw #00000080);
+}
+
+/* Effect layers. */
+
+.hc-card__grain,
+.hc-card__foil,
+.hc-card__glare {
+  pointer-events: none;
+}
+
+.hc-card__grain {
+  z-index: 2;
+  background: var(--hc-tex-grain) center / 200px 200px;
+  mix-blend-mode: overlay;
+  opacity: var(--hc-grain);
+}
+
+/*
+ * Up to rare the foil and glare skip the window: the effect lives on the frame.
+ * The mask is the union of two bands — everything above and below the window,
+ * and everything left and right of it — which leaves exactly the window out.
+ * Gradient stops are used instead of mask-position, whose percentages align
+ * the layer by its own size and would not match the window's left/top.
+ */
+.hc-card__foil,
+.hc-card__glare {
+  --hc-mask-window:
+    linear-gradient(
+      to bottom,
+      #000 var(--hc-win-y),
+      #0000 0 calc(var(--hc-win-y) + var(--hc-win-h)),
+      #000 0
+    ),
+    linear-gradient(
+      to right,
+      #000 var(--hc-win-x),
+      #0000 0 calc(var(--hc-win-x) + var(--hc-win-w)),
+      #000 0
+    );
+  -webkit-mask: var(--hc-mask-window);
+  mask: var(--hc-mask-window);
+}
+
+.hc-card__foil {
+  z-index: 3;
+  opacity: 0;
+}
+
+.hc-card__foil::before,
+.hc-card__foil::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
+
+.hc-card__glare {
+  z-index: 4;
+  background: radial-gradient(
+    circle at var(--hc-pointer),
+    #ffffffc4 0,
+    #ffffff30 28%,
+    #00000047 100%
+  );
+  mix-blend-mode: soft-light;
+  opacity: calc(var(--hc-active) * var(--hc-glare));
+}
+
+/* Rank gem, set into the bottom edge of the window. */
+
+.hc-card__jewel {
+  z-index: 7;
+  pointer-events: none;
+  overflow: visible;
+}
+
+.hc-card__gem {
+  position: absolute;
+  left: 50%;
+  top: calc(var(--hc-win-y) + var(--hc-win-h));
+  width: 11cqw;
+  aspect-ratio: 0.88;
+  translate: -50% -50%;
+  filter:
+    drop-shadow(0 0.6cqw 0.7cqw #00000073)
+    drop-shadow(0 0 2.2cqw var(--hc-gem-glow));
+}
+
+.hc-card__gem::before,
+.hc-card__gem::after {
+  content: "";
+  position: absolute;
+  clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%);
+}
+
+/* Crown and pavilion facets. */
+.hc-card__gem::before {
+  inset: 0;
+  background:
+    conic-gradient(
+      from -30deg,
+      var(--hc-gem-light) 0 60deg,
+      var(--hc-gem) 60deg 120deg,
+      var(--hc-gem-dark) 120deg 180deg,
+      color-mix(in srgb, var(--hc-gem-dark) 60%, var(--hc-gem)) 180deg 240deg,
+      var(--hc-gem) 240deg 300deg,
+      color-mix(in srgb, var(--hc-gem-light) 60%, var(--hc-gem)) 300deg 360deg
+    );
+}
+
+/* Table facet with a glint that slides with the pointer. */
+.hc-card__gem::after {
+  inset: 24% 22%;
+  background:
+    radial-gradient(
+      circle at calc(20% + var(--hc-px) * 60%) calc(15% + var(--hc-py) * 50%),
+      #ffffff 0,
+      #ffffff00 45%
+    ),
+    linear-gradient(160deg, var(--hc-gem-light), var(--hc-gem) 70%);
+  opacity: calc(0.75 + var(--hc-active) * 0.25);
+}
+
+/* States. */
+
+.hc-card.is-locked {
+  pointer-events: none;
+}
+
+.hc-card.is-locked .hc-card__tilt {
+  filter: grayscale(0.9) brightness(0.9);
+}
+
+.hc-card.is-locked .hc-card__foil,
+.hc-card.is-locked .hc-card__glare {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hc-card,
+  .hc-card * {
+    animation: none !important;
+    transition: none !important;
+  }
+}

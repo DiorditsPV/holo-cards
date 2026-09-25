@@ -1,0 +1,35 @@
+{
+  "name": "holo-cards",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Holographic collectible cards for the web: tilt, foil and light that follow the pointer. Framework-free TypeScript and CSS.",
+  "license": "MIT",
+  "author": "Pavel Diordits",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DiorditsPV/holo-cards.git"
+  },
+  "homepage": "https://github.com/DiorditsPV/holo-cards#readme",
+  "keywords": [
+    "holographic",
+    "cards",
+    "holo",
+    "foil",
+    "tilt",
+    "css",
+    "collectible",
+    "achievements"
+  ],
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "puppeteer-core": "^24.43.1",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.1"
+  }
+}

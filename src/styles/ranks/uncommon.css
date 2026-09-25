@@ -1,0 +1,35 @@
+/* Uncommon — jade satin. A soft gloss band follows the pointer across the frame. */
+.hc-card[data-rank="uncommon"] {
+  --hc-frame: linear-gradient(150deg, #effff6, #93dcb7 30%, #e0f6ea 52%, #3b9a6e 82%, #c4efd8);
+  --hc-panel:
+    radial-gradient(circle at 18% 8%, #ffffffd9, #fff0 28%),
+    linear-gradient(170deg, #f1fbf5, #d4efe0 55%, #c3e6d2);
+  --hc-panel-shadow: inset 0 0 0 1px #0c3a2633, inset 0 2px 10px #1f5a3f1a;
+  --hc-window:
+    radial-gradient(circle at 50% 32%, #f4fff9e6, #f4fff900 58%),
+    linear-gradient(158deg, #b3ecca, #4cbf86 58%, #1d7650);
+  --hc-window-line: #0c3a262e;
+  --hc-ink: #0c3a26;
+  --hc-copy: #2c5845;
+  --hc-muted: #4f8a6d;
+  --hc-line: #0c3a2626;
+  --hc-edge: #e6fff0;
+  --hc-glow: #2fbf71;
+  --hc-gem: #2fae6a;
+  --hc-gem-light: #c8ffe0;
+  --hc-gem-dark: #0d5a34;
+  --hc-glare: 0.35;
+}
+
+.hc-card[data-rank="uncommon"] .hc-card__foil {
+  opacity: calc(var(--hc-active) * 0.95);
+  background: linear-gradient(
+    115deg,
+    #0000 32%,
+    #ffffffb3 44%,
+    #ffffff 50%,
+    #d8ffe9b3 56%,
+    #0000 68%
+  ) calc(100% - var(--hc-px) * 100%) calc(100% - var(--hc-py) * 100%) / 260% 260%;
+  mix-blend-mode: overlay;
+}

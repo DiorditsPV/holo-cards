@@ -1,0 +1,162 @@
+/*
+ * Obsidian — a thick slab of black volcanic glass.
+ *
+ * Depth is parallax between five planes. When the card tilts, planes further
+ * back shift against the pointer and planes in front shift with it, so the eye
+ * reads the gap between them as thickness:
+ *
+ *   front      the art, hovering over the glass and mirrored in it   with the pointer, most
+ *   lettering  raised type just above the polished surface           with the pointer, half
+ *   surface    faint reflections and a lit top edge                  fixed
+ *   inside     mineral flecks and the rainbow-obsidian sheen         against, half
+ *   back       the panel, the art window and the gem                 against, full
+ */
+.hc-card[data-rank="obsidian"] {
+  --hc-frame: linear-gradient(155deg, #55555f, #0b0b0e 26%, #24242c 50%, #050506 76%, #44444f);
+  --hc-panel:
+    radial-gradient(ellipse 95% 75% at 50% 44%, #1c1c25 0%, #0b0b10 55%, #020203 100%);
+  --hc-panel-shadow:
+    inset 0 0 0 1px #ffffff29,
+    inset 0 1.5px 0 #ffffff3d,
+    inset 0 -1px 0 #000000,
+    inset 0 0 8cqw #000000e6;
+  --hc-window:
+    radial-gradient(ellipse at 50% 26%, #ffffff0f, #fff0 60%),
+    radial-gradient(ellipse at 50% 50%, #09090d, #000000);
+  --hc-window-line: #ffffff17;
+  --hc-ink: #f5f5f7;
+  --hc-copy: #b3b3bd;
+  --hc-muted: #85858f;
+  --hc-line: #ffffff1c;
+  --hc-edge: #ececf3;
+  --hc-glow: #b9a8ff;
+  --hc-pip: #ececf3;
+  --hc-gem: #1c1c22;
+  --hc-gem-light: #9a9aa8;
+  --hc-gem-dark: #000000;
+  --hc-gem-glow: #b9a8ff40;
+  --hc-glare: 0.35;
+  --hc-rest-shadow:
+    0 0 0 1px #ffffff33,
+    0 22px 36px -14px #000000f2,
+    0 0 34px -14px #b9a8ff;
+
+  /* Parallax offset for the back of the slab; other planes use fractions of it. */
+  --hc-depth-x: calc((0.5 - var(--hc-px)) * 3.4cqw);
+  --hc-depth-y: calc((0.5 - var(--hc-py)) * 3.4cqw);
+}
+
+/* Back: the panel, the window cut into it and the gem move inside the frame. */
+.hc-card[data-rank="obsidian"] .hc-card__face::before,
+.hc-card[data-rank="obsidian"] .hc-card__window {
+  translate: var(--hc-depth-x) var(--hc-depth-y);
+}
+
+.hc-card[data-rank="obsidian"] .hc-card__gem {
+  translate: calc(-50% + var(--hc-depth-x)) calc(-50% + var(--hc-depth-y));
+}
+
+.hc-card[data-rank="obsidian"] .hc-card__window {
+  box-shadow:
+    inset 0 0 0 1px var(--hc-window-line),
+    inset 0 -1px 0 #ffffff24,
+    inset 0 2.4cqw 6cqw #000000f2,
+    inset 0 0 3cqw #000000b3;
+}
+
+/*
+ * Inside: flecks and the sheen, half-way between the back and the surface.
+ * The mask makes this layer an isolated group, so the blend mode sits on the
+ * layer itself: its pseudo-elements are drawn normally inside the group and the
+ * whole group is screened onto the glass.
+ */
+.hc-card[data-rank="obsidian"] .hc-card__grain {
+  opacity: 1;
+  background: none;
+  mix-blend-mode: screen;
+  translate: calc(var(--hc-depth-x) / 2) calc(var(--hc-depth-y) / 2);
+  /* Fades out at the edges so the shifted layer never shows past the card outline. */
+  -webkit-mask-image: radial-gradient(ellipse 75% 70% at 50% 50%, #000 55%, #0000 100%);
+  mask-image: radial-gradient(ellipse 75% 70% at 50% 50%, #000 55%, #0000 100%);
+}
+
+.hc-card[data-rank="obsidian"] .hc-card__grain::before,
+.hc-card[data-rank="obsidian"] .hc-card__grain::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
+
+/*
+ * Rainbow-obsidian sheen: one broad soft arc of green, violet and gold, like the
+ * chatoyance of the real stone. It drifts against the pointer, as light inside
+ * glass does. At rest it is barely there; handling the card brings it up.
+ */
+.hc-card[data-rank="obsidian"] .hc-card__grain::before {
+  background: radial-gradient(
+    ellipse 120% 62% at calc(85% - var(--hc-px) * 70%) calc(120% - var(--hc-py) * 50%),
+    #0000 38%,
+    #0a4a33 49%,
+    #24145e 57%,
+    #4a340c 65%,
+    #0000 76%
+  );
+  filter: blur(16px);
+  opacity: calc(0.15 + var(--hc-active) * 0.55);
+}
+
+.hc-card[data-rank="obsidian"] .hc-card__grain::after {
+  background: var(--hc-tex-flecks) center / 120% 120%;
+  opacity: 0.45;
+}
+
+/* Surface: a faint wide reflection and a thin one, polished but not glaring. */
+.hc-card[data-rank="obsidian"] .hc-card__foil,
+.hc-card[data-rank="obsidian"] .hc-card__glare {
+  -webkit-mask: none;
+  mask: none;
+}
+
+.hc-card[data-rank="obsidian"] .hc-card__foil {
+  opacity: calc(0.5 + var(--hc-active) * 0.3);
+  background:
+    linear-gradient(
+      122deg,
+      #fff0 40%,
+      #ffffff14 47%,
+      #ffffff05 55%,
+      #fff0 61%
+    ) calc(100% - var(--hc-px) * 100%) calc(100% - var(--hc-py) * 100%) / 240% 240%,
+    linear-gradient(
+      122deg,
+      #fff0 49.5%,
+      #ffffff38 49.9%,
+      #fff0 50.3%
+    ) calc(100% - var(--hc-px) * 100%) calc(100% - var(--hc-py) * 100%) / 240% 240%;
+  mix-blend-mode: screen;
+}
+
+/* Lit top edge of the polished surface. */
+.hc-card[data-rank="obsidian"] .hc-card__foil::before {
+  background: linear-gradient(180deg, #ffffff1a, #fff0 12%);
+}
+
+/*
+ * Lettering: raised type on the surface. It replaces the base float with a
+ * share of the slab depth, so it drifts less than the art in front of it.
+ */
+.hc-card[data-rank="obsidian"] .hc-card__lettering {
+  translate: calc(var(--hc-depth-x) * -0.5) calc(var(--hc-depth-y) * -0.5);
+}
+
+/* Front: the art hovers over the glass and is mirrored in it. */
+.hc-card[data-rank="obsidian"] .hc-card__subject {
+  translate: calc(var(--hc-depth-x) * -0.8) calc(var(--hc-depth-y) * -0.8);
+}
+
+.hc-card[data-rank="obsidian"] .hc-card__subject > .hc-card__art {
+  filter:
+    drop-shadow(0 5cqw 3.6cqw #000000e6)
+    drop-shadow(0 0 3cqw #b9a8ff2e);
+  -webkit-box-reflect: below 1cqw linear-gradient(#0000 60%, #ffffff2e);
+}

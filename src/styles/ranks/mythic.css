@@ -1,0 +1,107 @@
+/*
+ * Mythic — crimson ember. The first rank that is alive at rest: the glow breathes.
+ * Rays spread from the pointer and embers gather around it.
+ *
+ * The art window is the mouth of a furnace: near-black at the top, where the
+ * upper rim casts its shadow, and lit from below by a hot orange glow, so it
+ * reads as a chamber behind the card rather than more of the panel.
+ */
+.hc-card[data-rank="mythic"] {
+  --hc-frame: linear-gradient(145deg, #ffb07a, #c2182f 22%, #3a0710 48%, #8a1a2a 76%, #ffcf8a);
+  --hc-panel:
+    radial-gradient(circle at 24% 12%, #ff5a4a4d, #0000 30%),
+    radial-gradient(circle at 78% 74%, #ff8a3a24, #0000 38%),
+    linear-gradient(170deg, #16040a, #300a13 45%, #1b0609 75%, #3d0d16);
+  --hc-panel-shadow: inset 0 0 0 1px #ffb09e80, inset 0 0 30px #080102;
+  --hc-window:
+    radial-gradient(ellipse 75% 55% at 50% 100%, #ff6a2a80, #ff2d1a33 45%, #0000 75%),
+    radial-gradient(ellipse at 50% 40%, #0000 40%, #030001cc 100%),
+    linear-gradient(180deg, #060102, #1a0407 60%, #2e0a0c);
+  --hc-window-line: #ffb09e4d;
+  --hc-ink: #fff2ee;
+  --hc-copy: #ffd9d1;
+  --hc-muted: #ffab9c;
+  --hc-line: #ffb09e33;
+  --hc-edge: #ffb09e;
+  --hc-glow: #ff2d55;
+  --hc-gem: #e0283a;
+  --hc-gem-light: #ffc9b8;
+  --hc-gem-dark: #4a0409;
+  --hc-gem-glow: #ff2d5599;
+  --hc-grain: 0.08;
+}
+
+/* Furnace rim: shadow under the upper edge, a hot lower lip, dark groove and a bevel. */
+.hc-card[data-rank="mythic"] .hc-card__window {
+  box-shadow:
+    inset 0 0 0 1px var(--hc-window-line),
+    inset 0 2.6cqw 3cqw -1.4cqw #000000e6,
+    inset 0 -1px 0 #ffb07a80,
+    0 0 0 1px #0a0103cc,
+    0 1px 0 1px #ff8a6a33;
+}
+
+.hc-card[data-rank="mythic"] .hc-card__tilt {
+  animation: hc-mythic-breathe 3.2s ease-in-out infinite alternate;
+}
+
+.hc-card[data-rank="mythic"].is-active .hc-card__tilt {
+  animation: none;
+}
+
+@keyframes hc-mythic-breathe {
+  from {
+    box-shadow:
+      0 0 0 1px #ff6a5566,
+      0 14px 26px -12px #000000c7,
+      0 0 22px -8px #ff2d55;
+  }
+  to {
+    box-shadow:
+      0 0 0 1px #ff9a8a99,
+      0 14px 26px -12px #000000c7,
+      0 0 36px -6px #ff2d55;
+  }
+}
+
+.hc-card[data-rank="mythic"] .hc-card__foil,
+.hc-card[data-rank="mythic"] .hc-card__glare {
+  -webkit-mask: none;
+  mask: none;
+}
+
+.hc-card[data-rank="mythic"] .hc-card__foil {
+  opacity: calc(0.12 + var(--hc-active) * 0.5);
+  background:
+    repeating-conic-gradient(
+      from 0deg at var(--hc-pointer),
+      #ff4b2b 0deg 3deg,
+      #0000 3deg 11deg,
+      #ffb13b 11deg 13deg,
+      #0000 13deg 22deg
+    ),
+    radial-gradient(circle at var(--hc-pointer), #ffd2a0 0, #5a1020 40%, #000 90%);
+  background-blend-mode: multiply;
+  filter: blur(0.4px) brightness(1.1) contrast(1.2);
+  mix-blend-mode: color-dodge;
+}
+
+/*
+ * Embers: sparkles and galaxies of the near cosmos, recoloured into fire and
+ * gathered in a circle of light around the pointer. The layer is 120% of the
+ * card and moved with `translate` (parallax 10%), not `background-position`:
+ * the texture stays fixed inside its own box and moves as a whole, so single
+ * embers do not jitter. The mask is placed in the layer's own box. No
+ * `will-change`: WebKit shows a promoted layer blank while its tiles repaint.
+ */
+.hc-card[data-rank="mythic"] .hc-card__foil::before {
+  inset: -10%;
+  background: var(--hc-tex-cosmos-near) center / cover;
+  translate: calc((0.5 - var(--hc-px)) * 10%) calc((0.5 - var(--hc-py)) * 10%);
+  opacity: calc(0.25 + var(--hc-active) * 0.75);
+  filter: sepia(1) saturate(6) hue-rotate(-18deg) brightness(1.4);
+  mix-blend-mode: screen;
+  --hc-at: calc(3.3% + var(--hc-px) * 93.3%) calc(3.3% + var(--hc-py) * 93.3%);
+  -webkit-mask-image: radial-gradient(circle at var(--hc-at), #000 0 14%, #0006 38%, #0000 64%);
+  mask-image: radial-gradient(circle at var(--hc-at), #000 0 14%, #0006 38%, #0000 64%);
+}

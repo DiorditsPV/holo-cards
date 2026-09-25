@@ -1,0 +1,94 @@
+/*
+ * Legendary — rainbow gold. A gold card covered by a rainbow hologram: rainbow
+ * stripes over fine vertical scan lines slide against the tilt, two sets of
+ * bright bars cross each other as the card turns, and a hard light follows the
+ * pointer. The foil covers the whole card.
+ *
+ * The art window is a gilded niche sunk into the gold: deep burnished bronze,
+ * darker than the bright panel, with a warm spotlight behind the art, a shadow
+ * under the upper rim and a lit lower lip, so the art stands in its own alcove.
+ */
+.hc-card[data-rank="legendary"] {
+  --hc-frame: linear-gradient(145deg, #fff3b0, #e6ac22 28%, #ffd35e 55%, #c2521c 83%, #ffe48a);
+  --hc-panel:
+    radial-gradient(circle at 78% 10%, #ffef9cb8, #fff0 24%),
+    linear-gradient(160deg, #fff3b4, #ffa63e 34%, #ee5a26 66%, #a0241a);
+  --hc-panel-shadow: inset 0 0 0 1px #7a1a10, inset 0 0 0 4px #ffeb8f4d, inset 6px 8px 19px #650c0747;
+  --hc-window:
+    radial-gradient(ellipse 60% 60% at 50% 42%, #ffe08a80, #ffb04a2e 45%, #0000 75%),
+    radial-gradient(ellipse at 50% 50%, #0000 45%, #2a0804b3 100%),
+    linear-gradient(180deg, #4a1508, #7a2a0c 55%, #a8461a);
+  --hc-window-line: #5a120a80;
+  --hc-ink: #5a160c;
+  /* Darker than the other warm tones: the text sits on bright orange and, now that
+     it floats above the foil, the hologram no longer lifts its contrast. */
+  --hc-copy: #4a1008;
+  --hc-muted: #6e1f10;
+  /* Lit pips are dark garnet with the gold edge, so they read on the orange panel. */
+  --hc-pip: #7a1a10;
+  --hc-line: #7a1a1033;
+  --hc-edge: #ffe476;
+  --hc-glow: #ff8a36;
+  --hc-gem: #f0a020;
+  --hc-gem-light: #fff4c0;
+  --hc-gem-dark: #8a3406;
+  --hc-gem-glow: #ffb02e73;
+  --hc-rest-shadow:
+    0 0 0 1px #ffe47299,
+    0 16px 30px -10px #000000d1,
+    0 0 28px -10px #ff8a36;
+
+  --hc-holo: #c62cf2, #10bfe8, #24ea88, #f0e012, #fa1038;
+  --hc-scan: 1px;
+}
+
+/* Niche rim: shadow under the upper edge, lit lower lip, dark groove and a gold bevel. */
+.hc-card[data-rank="legendary"] .hc-card__window {
+  box-shadow:
+    inset 0 0 0 1px var(--hc-window-line),
+    inset 0 2.6cqw 3cqw -1.4cqw #2a0402e6,
+    inset 0 -1px 0 #ffe8a0a6,
+    0 0 0 1px #5a120a99,
+    0 1px 0 1px #fff2b880;
+}
+
+.hc-card[data-rank="legendary"] .hc-card__foil,
+.hc-card[data-rank="legendary"] .hc-card__glare {
+  -webkit-mask: none;
+  mask: none;
+}
+
+/* Rainbow stripes over scan lines; they move against the tilt, faster vertically. */
+.hc-card[data-rank="legendary"] .hc-card__foil {
+  opacity: calc(0.18 + var(--hc-active) * 0.78);
+  background:
+    repeating-linear-gradient(110deg, var(--hc-holo), var(--hc-holo))
+      calc(85% - var(--hc-px) * 70%) calc(110% - var(--hc-py) * 120%) / 400% 400%,
+    repeating-linear-gradient(
+      90deg,
+      #060606 0 calc(var(--hc-scan) * 2),
+      #7a7a7a calc(var(--hc-scan) * 2) calc(var(--hc-scan) * 4)
+    ) center / cover;
+  background-blend-mode: overlay;
+  filter: brightness(1.05) contrast(1.15) saturate(1.2);
+  mix-blend-mode: color-dodge;
+}
+
+/* Two sets of bright bars drifting in opposite directions. */
+.hc-card[data-rank="legendary"] .hc-card__foil::before {
+  background:
+    repeating-linear-gradient(90deg, #000 6%, #a8a8a8 9%, #000 10.5%, #a8a8a8 12%, #000 15% 40%)
+      calc(40% + var(--hc-px) * 30% + var(--hc-py) * 20%) calc(35% + var(--hc-px) * 30%) / 200% 200%,
+    repeating-linear-gradient(90deg, #000 6%, #a8a8a8 9%, #000 10.5%, #a8a8a8 12%, #000 15% 31%)
+      calc(60% - var(--hc-px) * 30% - var(--hc-py) * 30%) calc(35% + var(--hc-py) * 30%) / 200% 200%;
+  background-blend-mode: screen;
+  filter: brightness(1.1) contrast(1.12);
+  mix-blend-mode: hard-light;
+}
+
+/* Hard light following the pointer. */
+.hc-card[data-rank="legendary"] .hc-card__foil::after {
+  background: radial-gradient(circle at var(--hc-pointer), #ffffffcc, #ffffff14 27%, #000000 88%);
+  filter: brightness(0.62) contrast(3.4);
+  mix-blend-mode: luminosity;
+}

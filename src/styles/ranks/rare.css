@@ -1,0 +1,47 @@
+/*
+ * Rare — silver foil. A pale silver card whose frame is printed with an op-art
+ * geometry. Under the pointer the frame flashes: a light centred on the pointer
+ * and a diagonal band are combined by difference into a metallic glint and
+ * dodged onto the card; the geometry shows through the glint, stronger the
+ * further the pointer is from the centre. The window stays clear.
+ */
+.hc-card[data-rank="rare"] {
+  --hc-frame: linear-gradient(145deg, #f4f9ff, #a9c6e6 26%, #e6eef8 52%, #6c8fc4 80%, #d6e6fb);
+  --hc-panel:
+    radial-gradient(circle at 80% 8%, #ffffffc2, #fff0 24%),
+    linear-gradient(160deg, #eef5fc, #c9dcee 42%, #e8f0f6 70%, #8faccb);
+  --hc-panel-shadow: inset 0 0 0 1px #143f6966, inset 0 0 0 4px #ffffff3d, inset 6px 8px 18px #265b872e;
+  --hc-window:
+    radial-gradient(circle at 50% 32%, #f2f9ffe6, #f2f9ff00 58%),
+    linear-gradient(160deg, #c2dcf5, #5a8ccc 58%, #24478c);
+  --hc-window-line: #0e234633;
+  --hc-ink: #0b2a56;
+  --hc-copy: #2c4a70;
+  --hc-muted: #4f6f98;
+  --hc-line: #0e23462b;
+  --hc-edge: #a8e4ff;
+  --hc-glow: #4a80fb;
+  --hc-gem: #6f93c8;
+  --hc-gem-light: #f2f8ff;
+  --hc-gem-dark: #243f6e;
+}
+
+.hc-card[data-rank="rare"] .hc-card__foil {
+  opacity: calc(0.18 + var(--hc-active) * 0.62);
+  background:
+    radial-gradient(circle at var(--hc-pointer), #ffffff 4%, #141414 48%, #ffffff 84%) center / 118% 118%,
+    linear-gradient(-48deg, #0a0a0a 14%, #ffffff 50%, #0a0a0a 86%)
+      calc(var(--hc-px) * 100%) calc(var(--hc-py) * 100%) / 210% 210%,
+    var(--hc-tex-grain) center / 200px 200px;
+  background-blend-mode: soft-light, difference;
+  filter: brightness(0.7) contrast(1.45) saturate(0.8);
+  mix-blend-mode: color-dodge;
+}
+
+/* The printed geometry, visible through the glint. */
+.hc-card[data-rank="rare"] .hc-card__foil::before {
+  background: var(--hc-tex-geometry) center / cover;
+  filter: contrast(1.35) brightness(0.72);
+  mix-blend-mode: overlay;
+  opacity: calc(0.12 + var(--hc-dist) * 0.4);
+}
