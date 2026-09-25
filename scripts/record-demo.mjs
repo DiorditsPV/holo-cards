@@ -13,12 +13,17 @@
  * in slow motion (CSS animations and the pointer path both SLOW times slower) and
  * the frames are played back at normal speed.
  *
- * Sharpness: frames are taken at device scale 2 and written at that full size,
- * without downscaling. One 256-colour palette is built from all frames and
- * applied with a fine ordered dither: gradients stay smooth, and the dither
- * pattern is the same from frame to frame, so unchanged areas compress well.
- * A palette per frame looks marginally better but makes the file three times
- * larger (about 45 MB for a pair) because the dither noise changes every frame.
+ * Sharpness and size: frames are taken at device scale 2, cropped to the cards
+ * and scaled to OUT_WIDTH (960 px, 1.6x the 600 px the README shows).
+ * One palette is built from all frames and applied with a fine ordered dither:
+ * gradients stay smooth and the dither pattern is stable from frame to frame,
+ * so unchanged areas compress well. A palette per frame looks marginally better
+ * but triples the size, because the dither noise then changes every frame.
+ *
+ * The size limit is hard: GitHub serves repository files over 10 MB as
+ * application/octet-stream with nosniff, and the README then shows nothing.
+ * The cards shimmer everywhere, so each frame costs about 0.15 MB; the loop is
+ * kept at four seconds to stay well under the limit.
  */
 import { execFileSync } from "node:child_process";
 import { mkdirSync, rmSync, statSync } from "node:fs";
@@ -30,12 +35,20 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const [url = "http://localhost:5173", ...pairArgs] = process.argv.slice(2);
 const pairs = (pairArgs.length ? pairArgs : ["epic,prismatic"]).map((p) => p.split(","));
 const chrome = process.env.CHROME_PATH ?? "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
-const PERIOD_MS = 5000;
+const PERIOD_MS = 4000;
 const FPS = 15;
 const SCALE = 2;
 const WIDTH = 600;
 const HEIGHT = 440;
 const CARD_WIDTH = 250;
+// Area written to the GIF, in CSS pixels, centred: the cards and their glow, no empty margins.
+const CROP_WIDTH = 560;
+const CROP_HEIGHT = 400;
+// Output width in pixels. GitHub serves repository files over 10 MB as
+// application/octet-stream with nosniff, so the README cannot show them: keep each GIF under that.
+const OUT_WIDTH = Number(process.env.OUT_WIDTH ?? 960);
+const COLORS = Number(process.env.COLORS ?? 160);
+const MAX_BYTES = 9.5 * 1024 * 1024;
 const SLOW = 4;
 
 async function record(ranks) {
@@ -112,12 +125,17 @@ async function record(ranks) {
     "-framerate", String(FPS),
     "-i", resolve(tmp, "f%04d.png"),
     "-filter_complex",
-    "split[a][b];[a]palettegen=max_colors=256:stats_mode=full[p];[b][p]paletteuse=dither=bayer:bayer_scale=5:diff_mode=rectangle",
+    `crop=${CROP_WIDTH * SCALE}:${CROP_HEIGHT * SCALE},scale=${OUT_WIDTH}:-1:flags=lanczos,split[a][b];` +
+      `[a]palettegen=max_colors=${COLORS}:stats_mode=full[p];[b][p]paletteuse=dither=bayer:bayer_scale=5:diff_mode=rectangle`,
     "-loop", "0",
     out,
   ]);
   if (!process.env.KEEP_FRAMES) rmSync(tmp, { recursive: true, force: true });
-  console.log(`wrote ${out} (${(statSync(out).size / 1024 / 1024).toFixed(1)} MB)`);
+  const size = statSync(out).size;
+  console.log(`wrote ${out} (${(size / 1024 / 1024).toFixed(1)} MB)`);
+  if (size > MAX_BYTES) {
+    throw new Error(`${out} is over ${MAX_BYTES / 1024 / 1024} MB: GitHub will not display it; lower OUT_WIDTH or COLORS`);
+  }
 }
 
 for (const ranks of pairs) await record(ranks);
