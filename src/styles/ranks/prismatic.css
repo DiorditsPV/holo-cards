@@ -93,20 +93,13 @@
 }
 
 /*
- * Rainbow foil. On light pearl multiply tints; color-dodge would burn it to white.
- *
- * The foil skips the window: multiplied over the shell it would tint it the
- * same as the panel and flatten the recess. The base mask cuts a square hole,
- * which leaves untinted notches outside the window's rounded corners, so here
- * the hole is an SVG rounded rectangle. Its numbers repeat the window geometry
- * in a 100 x 140 box (the card is 5 : 7): x 7%, y 11.5%, w 86%, h 44%, radius
- * 3.6cqw. Change them together with the window tokens in card.css.
+ * Rainbow foil over the whole card, the window included, so the spectrum runs
+ * unbroken behind the art. On light pearl multiply tints; color-dodge would
+ * burn it to white.
  */
 .hc-card[data-rank="prismatic"] .hc-card__foil {
-  --hc-mask-shell: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 140' preserveAspectRatio='none'><path fill-rule='evenodd' d='M0 0H100V140H0Z M10.6 16.1H89.4A3.6 3.6 0 0 1 93 19.7V74.1A3.6 3.6 0 0 1 89.4 77.7H10.6A3.6 3.6 0 0 1 7 74.1V19.7A3.6 3.6 0 0 1 10.6 16.1Z'/></svg>")
-    center / 100% 100% no-repeat;
-  -webkit-mask: var(--hc-mask-shell);
-  mask: var(--hc-mask-shell);
+  -webkit-mask: none;
+  mask: none;
   opacity: calc(0.4 + var(--hc-active) * 0.35);
   background: repeating-linear-gradient(
     125deg,
@@ -123,12 +116,15 @@
   mix-blend-mode: multiply;
 }
 
-/* Sparkles: near stars inverted into violet pigment so they read on a light ground. */
+/*
+ * Sparkles and small galaxies of the near cosmos, inverted into violet pigment
+ * so they read on a light ground.
+ */
 .hc-card[data-rank="prismatic"] .hc-card__foil::before {
   inset: -10%;
-  background: var(--hc-tex-stars-mid) center / cover;
+  background: var(--hc-tex-cosmos-near) center / cover;
   translate: calc((0.5 - var(--hc-px)) * 10%) calc((0.5 - var(--hc-py)) * 10%);
-  opacity: calc(0.16 + var(--hc-active) * 0.3);
+  opacity: calc(0.14 + var(--hc-active) * 0.26);
   filter: invert(1) sepia(1) saturate(4) hue-rotate(215deg) contrast(1.4);
   mix-blend-mode: multiply;
 }

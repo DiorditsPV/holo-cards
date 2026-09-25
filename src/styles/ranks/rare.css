@@ -27,21 +27,22 @@
 }
 
 .hc-card[data-rank="rare"] .hc-card__foil {
-  opacity: calc(0.18 + var(--hc-active) * 0.62);
+  /* Kept below a full wash-out: dodged too bright, the glint burns the printed geometry away. */
+  opacity: calc(0.15 + var(--hc-active) * 0.5);
   background:
     radial-gradient(circle at var(--hc-pointer), #ffffff 4%, #141414 48%, #ffffff 84%) center / 118% 118%,
     linear-gradient(-48deg, #0a0a0a 14%, #ffffff 50%, #0a0a0a 86%)
       calc(var(--hc-px) * 100%) calc(var(--hc-py) * 100%) / 210% 210%,
     var(--hc-tex-grain) center / 200px 200px;
   background-blend-mode: soft-light, difference;
-  filter: brightness(0.7) contrast(1.45) saturate(0.8);
+  filter: brightness(0.6) contrast(1.5) saturate(0.8);
   mix-blend-mode: color-dodge;
 }
 
 /* The printed geometry, visible through the glint. */
 .hc-card[data-rank="rare"] .hc-card__foil::before {
   background: var(--hc-tex-geometry) center / cover;
-  filter: contrast(1.35) brightness(0.72);
+  filter: contrast(1.6) brightness(0.7);
   mix-blend-mode: overlay;
-  opacity: calc(0.12 + var(--hc-dist) * 0.4);
+  opacity: calc(0.22 + var(--hc-dist) * 0.5);
 }

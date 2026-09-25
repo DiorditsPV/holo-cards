@@ -35,6 +35,9 @@
   --hc-tex-cosmos-far: url("../textures/cosmos-far.webp");
   --hc-tex-cosmos-mid: url("../textures/cosmos-mid.webp");
   --hc-tex-cosmos-near: url("../textures/cosmos-near.webp");
+  --hc-tex-dust-far: url("../textures/dust-far.webp");
+  --hc-tex-dust-mid: url("../textures/dust-mid.webp");
+  --hc-tex-dust-near: url("../textures/dust-near.webp");
 
   /* Typography. */
   --hc-font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;

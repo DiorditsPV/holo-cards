@@ -34,10 +34,10 @@ body {
   margin-top: 2.5rem;
 }
 
-/* When all nine fit, they stand in one row on a shared baseline. */
-@media (min-width: 1400px) {
+/* On wide screens five cards per row, large enough to see the foil. */
+@media (min-width: 1100px) {
   .ladder {
-    grid-template-columns: repeat(9, 1fr);
+    grid-template-columns: repeat(5, 1fr);
   }
 }
 

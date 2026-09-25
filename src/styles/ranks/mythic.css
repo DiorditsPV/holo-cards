@@ -1,6 +1,9 @@
 /*
  * Mythic — crimson ember. The first rank that is alive at rest: the glow breathes.
- * Rays spread from the pointer and embers gather around it.
+ * The foil is the cosmic foil in its first form, laid over crimson: chunky pixel
+ * dust over rainbow stripes and a light centred on the pointer, dodged onto the
+ * card, with two nearer dust layers opening up around the pointer. No stars or
+ * constellations: the blocks of colour are what flare as glints.
  *
  * The art window is the mouth of a furnace: near-black at the top, where the
  * upper rim casts its shadow, and lit from below by a hot orange glow, so it
@@ -29,6 +32,8 @@
   --hc-gem-dark: #4a0409;
   --hc-gem-glow: #ff2d5599;
   --hc-grain: 0.08;
+
+  --hc-stripe: 4%;
 }
 
 /* Furnace rim: shadow under the upper edge, a hot lower lip, dark groove and a bevel. */
@@ -70,38 +75,64 @@
   mask: none;
 }
 
+/* Cosmic foil: the Epic recipe with pixel dust instead of the star field. */
 .hc-card[data-rank="mythic"] .hc-card__foil {
-  opacity: calc(0.12 + var(--hc-active) * 0.5);
+  opacity: calc(0.08 + var(--hc-active) * 0.48);
   background:
-    repeating-conic-gradient(
-      from 0deg at var(--hc-pointer),
-      #ff4b2b 0deg 3deg,
-      #0000 3deg 11deg,
-      #ffb13b 11deg 13deg,
-      #0000 13deg 22deg
-    ),
-    radial-gradient(circle at var(--hc-pointer), #ffd2a0 0, #5a1020 40%, #000 90%);
-  background-blend-mode: multiply;
-  filter: blur(0.4px) brightness(1.1) contrast(1.2);
+    var(--hc-tex-dust-far) center / cover,
+    repeating-linear-gradient(
+      82deg,
+      #d8bc5a calc(var(--hc-stripe) * 1),
+      #78c066 calc(var(--hc-stripe) * 2),
+      #56bcb8 calc(var(--hc-stripe) * 3),
+      #6878d8 calc(var(--hc-stripe) * 4),
+      #a65ecc calc(var(--hc-stripe) * 5),
+      #c84e94 calc(var(--hc-stripe) * 6),
+      #c84e94 calc(var(--hc-stripe) * 7),
+      #a65ecc calc(var(--hc-stripe) * 8),
+      #6878d8 calc(var(--hc-stripe) * 9),
+      #56bcb8 calc(var(--hc-stripe) * 10),
+      #78c066 calc(var(--hc-stripe) * 11),
+      #d8bc5a calc(var(--hc-stripe) * 12)
+    ) calc(10% + var(--hc-px) * 80%) calc(10% + var(--hc-py) * 80%) / 400% 900%,
+    radial-gradient(circle at var(--hc-pointer), #d6f8ffb3 4%, #6a6c944d 43%, #060612 130%);
+  background-blend-mode: color-burn, multiply;
+  filter: brightness(1.08) contrast(1.12) saturate(0.9);
   mix-blend-mode: color-dodge;
 }
 
 /*
- * Embers: sparkles and galaxies of the near cosmos, recoloured into fire and
- * gathered in a circle of light around the pointer. The layer is 120% of the
- * card and moved with `translate` (parallax 10%), not `background-position`:
- * the texture stays fixed inside its own box and moves as a whole, so single
- * embers do not jitter. The mask is placed in the layer's own box. No
- * `will-change`: WebKit shows a promoted layer blank while its tiles repaint.
+ * The nearer dust layers are larger than the card and moved with `translate`,
+ * not `background-position`: the texture stays fixed inside its own box and
+ * moves as a whole, so single specks do not jitter. Their masks are placed in
+ * the layer's own box, hence the offsets. No `will-change`: WebKit shows a
+ * promoted layer blank while its tiles repaint.
  */
-.hc-card[data-rank="mythic"] .hc-card__foil::before {
-  inset: -10%;
-  background: var(--hc-tex-cosmos-near) center / cover;
-  translate: calc((0.5 - var(--hc-px)) * 10%) calc((0.5 - var(--hc-py)) * 10%);
-  opacity: calc(0.25 + var(--hc-active) * 0.75);
-  filter: sepia(1) saturate(6) hue-rotate(-18deg) brightness(1.4);
+.hc-card[data-rank="mythic"] .hc-card__foil::before,
+.hc-card[data-rank="mythic"] .hc-card__foil::after {
   mix-blend-mode: screen;
-  --hc-at: calc(3.3% + var(--hc-px) * 93.3%) calc(3.3% + var(--hc-py) * 93.3%);
-  -webkit-mask-image: radial-gradient(circle at var(--hc-at), #000 0 14%, #0006 38%, #0000 64%);
-  mask-image: radial-gradient(circle at var(--hc-at), #000 0 14%, #0006 38%, #0000 64%);
+}
+
+/* Middle dust: violet and amber blocks. Layer is 112% of the card, parallax 6%. */
+.hc-card[data-rank="mythic"] .hc-card__foil::before {
+  inset: -6%;
+  background: var(--hc-tex-dust-mid) center / cover;
+  translate: calc((0.5 - var(--hc-px)) * 6%) calc((0.5 - var(--hc-py)) * 6%);
+  filter: brightness(1.2) contrast(1.5);
+  opacity: calc(0.04 + var(--hc-active) * 0.96);
+  --hc-at: calc(2.4% + var(--hc-px) * 95.2%) calc(2.4% + var(--hc-py) * 95.2%);
+  -webkit-mask-image: radial-gradient(circle at var(--hc-at), #000 0 16%, #000e 28%, #0005 46%, #0000 66%);
+  mask-image: radial-gradient(circle at var(--hc-at), #000 0 16%, #000e 28%, #0005 46%, #0000 66%);
+}
+
+/* Near dust: pale bright blocks. Layer is 106% of the card, parallax 10%. */
+.hc-card[data-rank="mythic"] .hc-card__foil::after {
+  inset: -3%;
+  background: var(--hc-tex-dust-near) center / cover;
+  translate: calc((0.5 - var(--hc-px)) * 10%) calc((0.5 - var(--hc-py)) * 10%);
+  filter: brightness(1.1) contrast(1.35);
+  opacity: calc(var(--hc-active) * 0.9);
+  --hc-at: calc(-2.2% + var(--hc-px) * 104.3%) calc(-2.2% + var(--hc-py) * 104.3%);
+  -webkit-mask-image: radial-gradient(circle at var(--hc-at), #000 0 12%, #000d 26%, #0003 44%, #0000 62%);
+  mask-image: radial-gradient(circle at var(--hc-at), #000 0 12%, #000d 26%, #0003 44%, #0000 62%);
 }

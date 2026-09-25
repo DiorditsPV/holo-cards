@@ -233,6 +233,55 @@ def cosmos(name: str, dots: int, planets: int, sparkles: int, galaxies: int, lin
     save(img, name, quality=82)
 
 
+def pixel_dust(name: str, squares: int, blobs: int, discs: int, palette: list, brightness: float) -> None:
+    """Pixel dust for the cosmic foil: no stars or constellations, only chunky
+    colour. Drawn at half the size, quantised to 32 colours with dithering
+    and scaled up without smoothing, so every speck is a block of pixels with
+    colour noise inside — under color-dodge these blocks flare as glints.
+
+    - squares: single blocks of pastel colour;
+    - blobs: stepped diamonds and octagons filled with a checker dither;
+    - discs: large planets shaded with horizontal scan lines.
+    """
+    scale = 2
+    w, h = 367, 512
+    img = np.zeros((h, w, 3), dtype=np.float32)
+    pick = lambda: np.array(palette[rng.integers(len(palette))], dtype=np.float32)
+
+    def jitter(color):
+        return np.clip(color + rng.normal(0, 28, 3), 0, 255)
+
+    for _ in range(discs):
+        cx, cy, r = rng.random() * w, rng.random() * h, 12 + rng.random() * 22
+        color = pick() * (0.45 + 0.25 * rng.random())
+        for y in range(max(0, int(cy - r)), min(h, int(cy + r) + 1)):
+            span = max(0.0, r * r - (y - cy) ** 2) ** 0.5
+            row_dim = 1.0 if y % 2 == 0 else 0.45
+            for x in range(max(0, int(cx - span)), min(w, int(cx + span) + 1)):
+                img[y, x] = np.maximum(img[y, x], jitter(color * row_dim))
+    for _ in range(blobs):
+        cx, cy, r = int(rng.random() * w), int(rng.random() * h), 2 + int(rng.random() * 5)
+        color = pick() * (0.6 + 0.4 * rng.random())
+        for y in range(cy - r, cy + r + 1):
+            for x in range(cx - r, cx + r + 1):
+                # Stepped octagon: a diamond with its tips cut square.
+                if 0 <= x < w and 0 <= y < h and abs(x - cx) + abs(y - cy) <= r + r // 2:
+                    checker = 1.0 if (x + y) % 2 == 0 else 0.6
+                    img[y, x] = np.maximum(img[y, x], jitter(color * checker))
+    for _ in range(squares):
+        x, y = int(rng.random() * w), int(rng.random() * h)
+        # Most specks are one block, some two by two.
+        size = 2 if rng.random() < 0.3 else 1
+        color = pick() * (0.5 + 0.5 * rng.random())
+        img[y:y + size, x:x + size] = np.maximum(img[y:y + size, x:x + size], jitter(color))
+    img = np.clip(img * brightness, 0, 255).astype(np.uint8)
+    small = Image.fromarray(img).quantize(colors=32, dither=Image.Dither.FLOYDSTEINBERG).convert("RGB")
+    big = small.resize((w * scale, h * scale), Image.NEAREST)
+    OUT.mkdir(parents=True, exist_ok=True)
+    big.save(OUT / name, "WEBP", lossless=True, method=6)
+    print(f"{name}: {big.size[0]}x{big.size[1]}, {(OUT / name).stat().st_size // 1024} KB")
+
+
 if __name__ == "__main__":
     grain()
     brushed_metal()
@@ -247,3 +296,9 @@ if __name__ == "__main__":
     cosmos("cosmos-far.webp", dots=1800, planets=10, sparkles=40, galaxies=6, lines=8, white=False)
     cosmos("cosmos-mid.webp", dots=500, planets=7, sparkles=45, galaxies=4, lines=4, white=False)
     cosmos("cosmos-near.webp", dots=120, planets=0, sparkles=40, galaxies=5, lines=0, white=True)
+    pastel = [(255, 255, 255), (255, 190, 235), (205, 180, 255), (160, 205, 255), (255, 215, 175), (175, 255, 225)]
+    violet = [(215, 90, 235), (170, 90, 255), (255, 120, 190), (255, 170, 90), (120, 110, 255)]
+    pale = [(255, 255, 255), (240, 240, 255), (255, 235, 250)]
+    pixel_dust("dust-far.webp", squares=7000, blobs=70, discs=4, palette=pastel, brightness=1.0)
+    pixel_dust("dust-mid.webp", squares=5500, blobs=60, discs=3, palette=violet, brightness=1.0)
+    pixel_dust("dust-near.webp", squares=1250, blobs=40, discs=0, palette=pale, brightness=1.0)

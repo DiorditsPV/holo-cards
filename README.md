@@ -34,7 +34,7 @@ Each rank adds one visible layer on top of the previous one, so the order reads 
 | 4 | Epic      | cosmic foil   | foil over the whole card, stars open up around the pointer  |
 | 5 | Nebula    | deep space    | a porthole into a bright nebula, stars drifting in parallax |
 | 6 | Legendary | rainbow gold  | a rainbow hologram over scan lines, crossing bars of light  |
-| 7 | Mythic    | crimson ember | alive at rest: the glow breathes, rays and embers           |
+| 7 | Mythic    | crimson ember | alive at rest: the glow breathes, cosmic foil on crimson    |
 | 8 | Obsidian  | black glass   | depth by parallax, a mirror reflection                      |
 | 9 | Prismatic | pearl         | a rainbow frame that turns on its own, drifting foil        |
 
